@@ -69,7 +69,7 @@ gulp.task('build', ['html', 'scripts']);
 gulp.task('watch', ['watchify-enable-watching', 'build'], function() {
 //gulp.task('watch', ['watchify-enable-watching'], function() {
 
-  //plugins.livereload();
+  plugins.livereload();
 
   // Watch for changes
   gulp.watch([
