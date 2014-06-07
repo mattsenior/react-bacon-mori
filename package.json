@@ -6,6 +6,7 @@
     "gulp": "^3.7.0",
     "gulp-htmlmin": "^0.1.2",
     "gulp-jshint": "^1.6.2",
+    "gulp-livereload": "^2.0.0",
     "mori": "^0.2.6",
     "uglifyify": "^2.4.0"
   },

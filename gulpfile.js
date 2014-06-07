@@ -3,6 +3,7 @@
 var gulp = require('gulp');
 var jshint = require('gulp-jshint');
 var htmlmin = require('gulp-htmlmin');
+var livereload = require('gulp-livereload');
 
 var path = {
   src:  function(path) {
@@ -40,24 +41,18 @@ gulp.task('default', function() {
 // Watch
 gulp.task('watch', ['build'], function() {
 
-  //  plugins.livereload();
+  livereload();
 
-  //  // Watch for changes to dist
-  //  gulp.watch([
-  //     path.dist('**/*')
-  //  //   //path.dist('*.html'),
-  //  //   //path.dist('styles/main.min.css'),
-  //  //   //path.dist('scripts/main.min.js'),
-  //  //   //path.dist('images/**/*')
-  //   ], function(event) {
-  //     console.log('File changed:', event.path);
+  // Watch for changes to dist
+  gulp.watch(path.dist('**/*'), function(event) {
+     console.log('File changed:', event.path);
 
-  //     return gulp.src(event.path)
-  //       .pipe(plugins.livereload());
-  //  });
+     return gulp.src(event.path)
+       .pipe(livereload());
+  });
 
   // Watch .html files and re-process, which will trigger LiveReload above
-  //gulp.watch(path.src('**/*.html'), ['html']);
+  gulp.watch(path.src('**/*.html'), ['html']);
 
   // // Watch .scss files and re-process, which will trigger LiveReload above
   // gulp.watch(path.src('styles/**/*.scss'), ['styles']);

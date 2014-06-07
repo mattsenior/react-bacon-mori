@@ -8,9 +8,7 @@
 var mori = require('mori');
 
 console.log(mori);
-console.log('hey');
-
-blah
+console.log('heya');
 
 //console.log('hello');
 
