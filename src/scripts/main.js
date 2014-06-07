@@ -1,33 +1,79 @@
 'use strict';
 
+// Utils
+var _ = require('lodash');
+var mori = require('mori');
 //var $ = require('jquery');
 //var Bacon = require('baconjs');
-//var React = require('react');
-//var App = require('./app');
 
-var mori = require('mori');
+// React
+var React = require('react');
+var App = require('./app');
 
-console.log(mori);
-console.log('heya');
+// Vars
+var state;
+var stateHistory;
 
-//console.log('hello');
+// State
+state = mori.hash_map(
+  'user', null,
+  'plans', mori.vector()
+);
 
-// App state
-//var state = mori.hash_map(
-//  'user', null,
-//  'plans', mori.vector()
-//);
+// State History
+stateHistory = mori.vector();
 
-//console.log(state);
+/**
+ * Transact!
+ */
+function transact(lens, korks, f) {
+  if (_.isString(korks)) {
+    korks = [korks];
+  }
 
+  console.log('Transacting', mori.clj_to_js(korks));
+  state = mori.update_in(state, korks, f);
 
-//React.renderComponent(
-//  new App({
-//    greeting: 'Well hello',
-//    name: 'Naomi'
-//  }),
-//  document.body
-//);
+  render(state);
+}
+
+setInterval(function() {
+  console.log('tick');
+}, 1000);
+
+setTimeout(function() {
+  transact(state, ['user'], function(old) {
+    return 'Naomi';
+  });
+}, 5500);
+
+function render(state) {
+  React.renderComponent(
+    new App({
+      greeting: 'Well hello',
+      name: mori.get_in(state, ['user'])
+    }),
+    document.body
+  );
+}
+
+render(state);
+
+var originalState = state;
+
+setInterval(function() {
+  if (originalState === state) {
+    console.log('State unchanged');
+  } else {
+    console.log('NEW STATE');
+  }
+
+  if (mori.get_in(originalState, ['plans']) === mori.get_in(state, ['plans'])) {
+    console.log('Plans unchanged');
+  } else {
+    console.log('PLANS CHANGED');
+  }
+}, 500);
 
 //$(document).ready(function () {
 //  var clicks, counter;
