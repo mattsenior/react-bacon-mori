@@ -4,12 +4,13 @@
   "dependencies": {},
   "devDependencies": {
     "gulp": "^3.7.0",
+    "gulp-htmlmin": "^0.1.2",
     "gulp-jshint": "^1.6.2",
     "mori": "^0.2.6",
     "uglifyify": "^2.4.0"
   },
   "scripts": {
-    "start": "watchify src/scripts/main.js -t uglifyify -o src/scripts/main.bundle.js -v & gulp watch"
+    "start": "watchify src/scripts/main.js -t uglifyify -o dist/scripts/main.min.js -v & gulp watch"
   },
   "engines": {
     "node": ">=0.10.0"
