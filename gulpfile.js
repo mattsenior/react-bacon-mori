@@ -1,10 +1,7 @@
 'use strict';
 
 var gulp = require('gulp');
-var plugins = require('gulp-load-plugins')();
-var source = require('vinyl-source-stream');
-var watchify = require('watchify');
-var browserify = require('browserify');
+var jshint = require('gulp-jshint');
 
 var path = {
   src:  function(path) {
@@ -15,85 +12,68 @@ var path = {
   },
 };
 
-// Hack to enable/disable watchify watch mode - taken from gulp-watchify official example
-var watchifyWatching = false;
-gulp.task('watchify-enable-watching', function() {
-  watchifyWatching = true;
-});
-
+var scripts = [path.src('scripts/**/*.js'), '!' + path.src('scripts/main.bundle.js')];
 
 // HTML
 gulp.task('html', function() {
+  console.log('HTML');
   return gulp.src(path.src('**/*.html'))
-    .pipe(plugins.htmlmin({collapseWhitespace: true}))
+    //.pipe(plugins.htmlmin({collapseWhitespace: true}))
     .pipe(gulp.dest(path.dist('')));
 });
-
+//
 // Scripts
-gulp.task('scripts', ['scripts-main', 'scripts-jshint']);
-gulp.task('scripts-main', function() {
-  var bundler;
-
-  function rebundle() {
-    console.log('Rebundling Browserify');
-
-    return bundler.bundle()
-      .pipe(source('main.js'))
-      .pipe(plugins.streamify(plugins.uglify()))
-      .pipe(plugins.rename({suffix: '.min'}))
-      .pipe(gulp.dest(path.dist('scripts')));
-  }
-
-  if (watchifyWatching) {
-    bundler = watchify(path.src('scripts/main.js'));
-    bundler.on('update', rebundle);
-  } else {
-    bundler = browserify(path.src('scripts/main.js'));
-  }
-
-  bundler.transform('reactify');
-  //bundler.transform('partialify');
-
-  return rebundle();
-});
 gulp.task('scripts-jshint', function() {
+//  console.log('SCRIPTS-JSHINT');
+
   // JSHint
-  gulp.src(path.src('scripts/**/*'))
-    .pipe(plugins.jshint('.jshintrc'))
-    .pipe(plugins.jshint.reporter('default'));
+  return gulp.src(scripts)
+  //return gulp.src([path.src('scripts/**/*.js'), '!' + path.src('scripts/main.bundle.js')])
+  //return gulp.src(path.src('scripts/main.js'))
+    .pipe(jshint('.jshintrc'))
+    .pipe(jshint.reporter('default'));
 });
 
 // Build
-gulp.task('build', ['html', 'scripts']);
+gulp.task('build', ['html', 'scripts-jshint']);
+//gulp.task('build', ['html', 'scripts-jshint']);
+
+// // Default task
+// gulp.task('default', function() {
+//   gulp.start('build');
+// });
 
 // Watch
-gulp.task('watch', ['watchify-enable-watching', 'build'], function() {
-//gulp.task('watch', ['watchify-enable-watching'], function() {
+//gulp.task('watch', ['watchify-enable-watching', 'build'], function() {
+//gulp.task('watch', ['build'], function() {
+gulp.task('watch', function() {
 
-  plugins.livereload();
+  console.log('WATCHING');
+  //  plugins.livereload();
 
-  // Watch for changes
-  gulp.watch([
-     path.dist('**/*')
-  //   //path.dist('*.html'),
-  //   //path.dist('styles/main.min.css'),
-  //   //path.dist('scripts/main.min.js'),
-  //   //path.dist('images/**/*')
-   ], function(event) {
-     console.log('File changed:', event.path);
+  //  // Watch for changes to dist
+  //  gulp.watch([
+  //     path.dist('**/*')
+  //  //   //path.dist('*.html'),
+  //  //   //path.dist('styles/main.min.css'),
+  //  //   //path.dist('scripts/main.min.js'),
+  //  //   //path.dist('images/**/*')
+  //   ], function(event) {
+  //     console.log('File changed:', event.path);
 
-     return gulp.src(event.path)
-       .pipe(plugins.livereload());
-  });
+  //     return gulp.src(event.path)
+  //       .pipe(plugins.livereload());
+  //  });
 
   // Watch .html files and re-process, which will trigger LiveReload above
-  gulp.watch(path.src('**/*.html'), ['html']);
+  //gulp.watch(path.src('**/*.html'), ['html']);
 
   // // Watch .scss files and re-process, which will trigger LiveReload above
   // gulp.watch(path.src('styles/**/*.scss'), ['styles']);
 
-  // Watch .js files for jshint
-  gulp.watch(path.src('scripts/**/*.js'), ['scripts-jshint']);
+  // Watch .js files
+  gulp.watch(scripts, ['scripts-jshint']);
+  //gulp.watch(path.src('scripts/main.js'), ['scripts-jshint']);
 
   // // Watch image files and re-process, which will trigger LiveReload above
   // gulp.watch(path.src('images/**/*'), ['images']);

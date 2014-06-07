@@ -1,18 +1,35 @@
 'use strict';
 
-var $ = require('jquery'),
-  Bacon = require('baconjs'),
-  React = require('react'),
-  App = require('./app');
+//var $ = require('jquery');
+//var Bacon = require('baconjs');
+//var React = require('react');
+//var App = require('./app');
+
+var mori = require('mori');
+
+console.log(mori);
+console.log('hey');
+
+blah
+
+//console.log('hello');
+
+// App state
+//var state = mori.hash_map(
+//  'user', null,
+//  'plans', mori.vector()
+//);
+
+//console.log(state);
 
 
-React.renderComponent(
-  new App({
-    greeting: 'Well hello',
-    name: 'Naomi'
-  }),
-  document.body
-);
+//React.renderComponent(
+//  new App({
+//    greeting: 'Well hello',
+//    name: 'Naomi'
+//  }),
+//  document.body
+//);
 
 //$(document).ready(function () {
 //  var clicks, counter;
