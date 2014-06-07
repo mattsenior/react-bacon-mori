@@ -51,13 +51,14 @@ gulp.task('scripts-main', function() {
     bundler = browserify(path.src('scripts/main.js'));
   }
 
+  bundler.transform('reactify');
   //bundler.transform('partialify');
 
   return rebundle();
 });
 gulp.task('scripts-jshint', function() {
   // JSHint
-  gulp.src(path.src('scripts/main.js'))
+  gulp.src(path.src('scripts/**/*'))
     .pipe(plugins.jshint('.jshintrc'))
     .pipe(plugins.jshint.reporter('default'));
 });
