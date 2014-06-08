@@ -1,9 +1,11 @@
 'use strict';
 
+var component = require('./component');
 var React = require('react');
 
-module.exports = React.createClass({
+module.exports = component({
   render: function() {
-    return React.DOM.h1({}, this.props.greeting + ' ' + this.props.name);
+    console.log('rendering');
+    return React.DOM.h1({}, this.props.greeting + ' ' + this.props.user);
   }
 });

@@ -23,6 +23,8 @@ state = mori.hash_map(
 // State History
 stateHistory = mori.vector();
 
+console.log(mori);
+
 /**
  * Transact!
  */
@@ -32,26 +34,40 @@ function transact(lens, korks, f) {
   }
 
   console.log('Transacting', mori.clj_to_js(korks));
+
+  // Add current state to history
+  stateHistory = mori.conj(stateHistory, state);
+
+  // Update global state object
   state = mori.update_in(state, korks, f);
 
+  // Re-render
   render(state);
 }
 
 setInterval(function() {
-  console.log('tick');
+  //console.log('tick');
 }, 1000);
 
 setTimeout(function() {
-  transact(state, ['user'], function(old) {
-    return 'Naomi';
+  transact(state, ['user'], function() {
+    return mori.hash_map('name', 'Naomi');
   });
 }, 5500);
+
+setTimeout(function() {
+  transact(state, ['user'], function(old) {
+    return mori.update_in(old, ['name'], function(name) {
+      return name + ' ' + name;
+    });
+  });
+}, 11000);
 
 function render(state) {
   React.renderComponent(
     new App({
-      greeting: 'Well hello',
-      name: mori.get_in(state, ['user'])
+      //greeting: 'Well hello',
+      user: mori.get_in(state, ['user'])
     }),
     document.body
   );
@@ -62,6 +78,7 @@ render(state);
 var originalState = state;
 
 setInterval(function() {
+  return;
   if (originalState === state) {
     console.log('State unchanged');
   } else {
@@ -74,6 +91,13 @@ setInterval(function() {
     console.log('PLANS CHANGED');
   }
 }, 500);
+
+
+setInterval(function() {
+  transact(state, ['plans'], function(old) {
+    return mori.conj(old, Math.random());
+  });
+}, 1000);
 
 //$(document).ready(function () {
 //  var clicks, counter;
