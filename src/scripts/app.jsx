@@ -1,12 +1,18 @@
 'use strict';
 
-var component = require('./component');
 var React = require('react');
+var m = require('mori');
 
-module.exports = component({
+var immutableMixin = require('./immutable-mixin');
+
+var App = React.createClass({
+  mixins: [immutableMixin],
+
   render: function() {
     return (
-      <h1>{this.props.greeting + ' ' + this.props.user}</h1>
+      <h1>Hello {m.get(this.props.user, 'name', 'there')}</h1>
     )
   }
 });
+
+module.exports = App;

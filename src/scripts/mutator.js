@@ -5,13 +5,13 @@ var util = require('util');
 var _ = require('lodash');
 var mori = require('mori');
 
-function Mutator(state) {
+function Mutator(initialState) {
 
   // Parent constructor
   EventEmitter.call(this);
 
   // Store state
-  this.state     = state;
+  this.state = initialState;
 
   // And a reference to the previous state, included in change events
   this.prevState = null;

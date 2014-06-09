@@ -1,7 +1,7 @@
 'use strict';
 
 // Theirs
-var mori = require('mori');
+var m = require('mori');
 var raf = require('raf');
 var React = require('react');
 var Bacon = require('baconjs');
@@ -22,9 +22,9 @@ var renderTriggerStream;
 var renderStream;
 
 // Starting state
-initialState = mori.hash_map(
+initialState = m.hash_map(
   'user', null,
-  'plans', mori.vector()
+  'plans', m.vector()
 );
 
 // Mutator
@@ -40,11 +40,11 @@ state = mutateStream
   .toProperty(initialState);
 
 // State History is a mori vector accumulating all the state changes
-stateHistory = state.scan(mori.vector(), function(history, newState) {
+stateHistory = state.scan(m.vector(), function(history, newState) {
   //
   //TODO Do we want to limit this?
   //
-  return mori.conj(history, newState);
+  return m.conj(history, newState);
 });
 
 // Render trigger stream
@@ -76,7 +76,7 @@ function render(state) {
   React.renderComponent(
     new App({
       //greeting: 'Well hello',
-      user: mori.get_in(state, ['user'])
+      user: m.get_in(state, ['user'])
     }),
     document.body
   );
@@ -90,7 +90,6 @@ renderStream.onValue(render);
  * Dirty bits
  * ==========
  */
-
 
 // Export React to the window object to use React DevTools
 window.React = React;
@@ -112,50 +111,16 @@ function mutate(path, fn, msg) {
  * =====
  */
 
-//renderStream.onValue(function() {
-//  console.log('Rendering');
-//});
-//mutateStream.onValue(function() {
-//  console.log('Mutating');
-//});
-
-var interval = setInterval(function() {
-  mutate(['user'], function() {
-    return mori.hash_map('name', 'Naomi');
-  });
-}, 8);
 setTimeout(function() {
-  clearInterval(interval);
+  mutate(['user'], function() {
+    return m.hash_map('name', 'Horatio');
+  });
 }, 2000);
 
 setTimeout(function() {
-  mutate(['user'], function() {
-    return mori.hash_map('name', 'Naomi');
-  });
-}, 5500);
-
-setTimeout(function() {
   mutate(['user'], function(old) {
-    return mori.update_in(old, ['name'], function(name) {
-      return name + ' ' + name;
+    return m.update_in(old, ['name'], function(name) {
+      return 'Mr ' + name;
     });
   });
-}, 11000);
-
-
-
-
-//$(document).ready(function () {
-//  var clicks, counter;
-//
-//  clicks = Bacon.fromEventTarget($('h1'), 'click').map(1);
-//  counter = clicks.scan(0, function(a, b) {
-//    return a + b;
-//  });
-//
-//  clicks.onValue(function(value) {
-//    console.log('You clicked the title');
-//  });
-//
-//  counter.assign($('p'), 'text');
-//});
+}, 5000);
