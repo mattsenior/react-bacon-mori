@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "dependencies": {},
   "devDependencies": {
+    "baconjs": "^0.7.14",
     "envify": "^1.2.1",
     "gulp": "^3.7.0",
     "gulp-htmlmin": "^0.1.2",
@@ -11,6 +12,7 @@
     "gulp-react": "^0.3.3",
     "lodash": "^2.4.1",
     "mori": "^0.2.6",
+    "raf": "^2.0.0",
     "react": "^0.10.0",
     "react-tools": "^0.10.0",
     "reactify": "^0.13.1",

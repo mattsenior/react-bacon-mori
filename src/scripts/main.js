@@ -1,36 +1,78 @@
 'use strict';
 
-// Libs
-var _ = require('lodash');
+// Theirs
 var mori = require('mori');
+var raf = require('raf');
+var React = require('react');
+var Bacon = require('baconjs');
+
+// Ours
+var Mutator = require('./mutator');
 
 // Views
-var React = require('react');
 var App = require('./app.jsx');
 
-window.React = React;
-
-// Vars
+// Local
+var mutator;
+var initialState;
 var state;
 var stateHistory;
-var renderIsQueued = false;
-var scheduleRender;
+var mutateStream;
+var renderTriggerStream;
+var renderStream;
 
-// State
-state = mori.hash_map(
+// Starting state
+initialState = mori.hash_map(
   'user', null,
   'plans', mori.vector()
 );
 
-// State History
-stateHistory = mori.vector();
+// Mutator
+mutator = new Mutator(initialState);
+
+// EventStream for every mutation, with detailed payload including previous and
+// new states, and a human-readable message.
+mutateStream = Bacon.fromEventTarget(mutator, 'change');
+
+// Our global state (Bacon Property)
+state = mutateStream
+  .map('.state')
+  .toProperty(initialState);
+
+// State History is a mori vector accumulating all the state changes
+stateHistory = state.scan(mori.vector(), function(history, newState) {
+  //
+  //TODO Do we want to limit this?
+  //
+  return mori.conj(history, newState);
+});
+
+// Render trigger stream
+//
+// A stream of events upon which we execute the render.
+// If we have requestAnimationFrame available, we will be controlled by that,
+// else we are throttled to the timeout set in the raf polyfill.
+//
+// We are ‘watching’ for changes (including the initial value) of our state
+// property, irrespective of the mutateStream.
+renderTriggerStream = state
+  .toEventStream()
+  .flatMapFirst(function() {
+    return Bacon.fromCallback(function(cb) {
+      // requestAnimationFrame polyfill
+      raf(function() {
+        cb();
+      });
+    });
+  });
+
+// Render stream is a throttled stream of states that we actually want to render
+renderStream = state.sampledBy(renderTriggerStream);
 
 /**
- * Perform a render of the global state. Shouldn’t be used directly,
- * render() should be used instead.
+ * Render the root component with the given state
  */
-function renderNow() {
-  console.log('renderNow');
+function render(state) {
   React.renderComponent(
     new App({
       //greeting: 'Well hello',
@@ -38,90 +80,47 @@ function renderNow() {
     }),
     document.body
   );
-
-  // Clear queue (in case we are using a queue)
-  renderIsQueued = false;
 }
 
-/**
- * Schedule the rendering
- * @returns {function}
- */
-scheduleRender = _.memoize(function() {
-  if (window.requestAnimationFrame) {
-    return function() {
-      console.log('requestAnimationFrame()')
-      window.requestAnimationFrame(renderAll);
-    };
-  } else {
-    return function() {
-      setTimeout(renderAll, 16);
-    };
-  }
-})();
+// Execute the render
+renderStream.onValue(render);
+
 
 /**
- * Queue up the render. This is the function that should be called when a
- * re-render is required.
+ * Dirty bits
+ * ==========
  */
-function queueRender() {
-  console.log('queueRender');
-  // Already queued
-  if (renderIsQueued) {
-    console.log('ignoring');
-    return;
-  }
 
-  scheduleRender();
 
-  renderIsQueued = true;
+// Export React to the window object to use React DevTools
+window.React = React;
+
+
+/**
+ * Bits that need refactoring
+ * ==========================
+ */
+
+// For now we have a global mutate function before our dispatcher is in place
+function mutate(path, fn, msg) {
+  mutator.mutate(path, fn, msg);
 }
 
+
 /**
- * Transact!
- * Updates the global state object at the given path, adds the old state to
- * stateHistory, and triggers a re-render.
- * @param {object} lens Not yet implemented
- * @param {string|string[]} path path to data being updated
- * @param {function} fn Transformation function, will be passed old data at the path
- * @param {string} msg Message
+ * Debug
+ * =====
  */
-function transact(lens, path, fn, msg) {
 
-  // Ensure path is an array
-  if (_.isString(path)) {
-    path = [path];
-  }
+//renderStream.onValue(function() {
+//  console.log('Rendering');
+//});
+//mutateStream.onValue(function() {
+//  console.log('Mutating');
+//});
 
-  console.log('Transacting', mori.clj_to_js(path));
-
-  // Add current state to history
-  stateHistory = mori.conj(stateHistory, state);
-
-  // Update global state object
-  state = mori.update_in(state, path, fn);
-
-  // Re-render
-  render(state);
-}
-
-// Render our app
-render(state);
-
-
-
-
-
-
-
-
-
-
-
-
-// DEBUG
 var interval = setInterval(function() {
-  transact(state, ['user'], function() {
+  mutate(['user'], function() {
     return mori.hash_map('name', 'Naomi');
   });
 }, 8);
@@ -130,13 +129,13 @@ setTimeout(function() {
 }, 2000);
 
 setTimeout(function() {
-  transact(state, ['user'], function() {
+  mutate(['user'], function() {
     return mori.hash_map('name', 'Naomi');
   });
 }, 5500);
 
 setTimeout(function() {
-  transact(state, ['user'], function(old) {
+  mutate(['user'], function(old) {
     return mori.update_in(old, ['name'], function(name) {
       return name + ' ' + name;
     });
