@@ -8,13 +8,16 @@
     "gulp-htmlmin": "^0.1.2",
     "gulp-jshint": "^1.6.2",
     "gulp-livereload": "^2.0.0",
+    "gulp-react": "^0.3.3",
     "lodash": "^2.4.1",
     "mori": "^0.2.6",
     "react": "^0.10.0",
+    "react-tools": "^0.10.0",
+    "reactify": "^0.13.1",
     "uglifyify": "^2.4.0"
   },
   "scripts": {
-    "start": "watchify src/scripts/main.js -t uglifyify -o dist/scripts/main.min.js -v & gulp watch"
+    "start": "watchify src/scripts/main.js -t reactify -t uglifyify -o dist/scripts/main.min.js -v & gulp watch"
   },
   "engines": {
     "node": ">=0.10.0"

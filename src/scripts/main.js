@@ -1,14 +1,12 @@
 'use strict';
 
-// Utils
+// Libs
 var _ = require('lodash');
 var mori = require('mori');
-//var $ = require('jquery');
-//var Bacon = require('baconjs');
 
-// React
+// Views
 var React = require('react');
-var App = require('./app');
+var App = require('./app.jsx');
 
 // Vars
 var state;
@@ -23,10 +21,26 @@ state = mori.hash_map(
 // State History
 stateHistory = mori.vector();
 
-console.log(mori);
+/**
+ * Render!
+ */
+function render(state) {
+  React.renderComponent(
+    new App({
+      //greeting: 'Well hello',
+      user: mori.get_in(state, ['user'])
+    }),
+    document.body
+  );
+}
 
 /**
  * Transact!
+ * Updates the global state object at the given path, adds the old state to
+ * stateHistory, and triggers a re-render.
+ * @param {object} lens Not yet implemented
+ * @param {string|array} path path to data being updated
+ * @param {function} f Transformation function, will be passed old data at the korks path
  */
 function transact(lens, korks, f) {
   if (_.isString(korks)) {
@@ -45,6 +59,21 @@ function transact(lens, korks, f) {
   render(state);
 }
 
+// Render our app
+render(state);
+
+
+
+
+
+
+
+
+
+
+
+
+// DEBUG
 setInterval(function() {
   //console.log('tick');
 }, 1000);
@@ -63,41 +92,8 @@ setTimeout(function() {
   });
 }, 11000);
 
-function render(state) {
-  React.renderComponent(
-    new App({
-      //greeting: 'Well hello',
-      user: mori.get_in(state, ['user'])
-    }),
-    document.body
-  );
-}
-
-render(state);
-
-var originalState = state;
-
-setInterval(function() {
-  return;
-  if (originalState === state) {
-    console.log('State unchanged');
-  } else {
-    console.log('NEW STATE');
-  }
-
-  if (mori.get_in(originalState, ['plans']) === mori.get_in(state, ['plans'])) {
-    console.log('Plans unchanged');
-  } else {
-    console.log('PLANS CHANGED');
-  }
-}, 500);
 
 
-setInterval(function() {
-  transact(state, ['plans'], function(old) {
-    return mori.conj(old, Math.random());
-  });
-}, 1000);
 
 //$(document).ready(function () {
 //  var clicks, counter;

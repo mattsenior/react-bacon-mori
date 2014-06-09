@@ -6,6 +6,8 @@ var React = require('react');
 module.exports = component({
   render: function() {
     console.log('rendering');
-    return React.DOM.h1({}, this.props.greeting + ' ' + this.props.user);
+    return (
+      <h1>{this.props.greeting + ' ' + this.props.user}</h1>
+    )
   }
 });

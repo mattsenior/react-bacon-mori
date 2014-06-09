@@ -16,7 +16,9 @@ var _ = require('lodash');
 function hasChanged(current, next) {
   return _.some(current, function(value, key) {
     // Always update if we’re not dealing with a mori collection
-    if (!mori.is_collection(value)) return true;
+    if (!mori.is_collection(value)) {
+      return true;
+    }
 
     // Trigger update if referential equality fails
     return value !== next[key];
@@ -50,7 +52,6 @@ function component(opts) {
       );
     }
   }, opts));
-
 }
 
 module.exports = component;

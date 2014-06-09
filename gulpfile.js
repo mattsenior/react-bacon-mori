@@ -4,6 +4,7 @@ var gulp = require('gulp');
 var jshint = require('gulp-jshint');
 var htmlmin = require('gulp-htmlmin');
 var livereload = require('gulp-livereload');
+var react = require('gulp-react');
 
 var path = {
   src:  function(path) {
@@ -26,6 +27,7 @@ gulp.task('html', function() {
 // Scripts
 gulp.task('scripts-jshint', function() {
   return gulp.src(scripts)
+    .pipe(react())
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('default'));
 });
