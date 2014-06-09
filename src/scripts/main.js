@@ -8,9 +8,13 @@ var mori = require('mori');
 var React = require('react');
 var App = require('./app.jsx');
 
+window.React = React;
+
 // Vars
 var state;
 var stateHistory;
+var renderIsQueued = false;
+var scheduleRender;
 
 // State
 state = mori.hash_map(
@@ -22,9 +26,11 @@ state = mori.hash_map(
 stateHistory = mori.vector();
 
 /**
- * Render!
+ * Perform a render of the global state. Shouldn’t be used directly,
+ * render() should be used instead.
  */
-function render(state) {
+function renderNow() {
+  console.log('renderNow');
   React.renderComponent(
     new App({
       //greeting: 'Well hello',
@@ -32,6 +38,43 @@ function render(state) {
     }),
     document.body
   );
+
+  // Clear queue (in case we are using a queue)
+  renderIsQueued = false;
+}
+
+/**
+ * Schedule the rendering
+ * @returns {function}
+ */
+scheduleRender = _.memoize(function() {
+  if (window.requestAnimationFrame) {
+    return function() {
+      console.log('requestAnimationFrame()')
+      window.requestAnimationFrame(renderAll);
+    };
+  } else {
+    return function() {
+      setTimeout(renderAll, 16);
+    };
+  }
+})();
+
+/**
+ * Queue up the render. This is the function that should be called when a
+ * re-render is required.
+ */
+function queueRender() {
+  console.log('queueRender');
+  // Already queued
+  if (renderIsQueued) {
+    console.log('ignoring');
+    return;
+  }
+
+  scheduleRender();
+
+  renderIsQueued = true;
 }
 
 /**
@@ -39,21 +82,24 @@ function render(state) {
  * Updates the global state object at the given path, adds the old state to
  * stateHistory, and triggers a re-render.
  * @param {object} lens Not yet implemented
- * @param {string|array} path path to data being updated
- * @param {function} f Transformation function, will be passed old data at the korks path
+ * @param {string|string[]} path path to data being updated
+ * @param {function} fn Transformation function, will be passed old data at the path
+ * @param {string} msg Message
  */
-function transact(lens, korks, f) {
-  if (_.isString(korks)) {
-    korks = [korks];
+function transact(lens, path, fn, msg) {
+
+  // Ensure path is an array
+  if (_.isString(path)) {
+    path = [path];
   }
 
-  console.log('Transacting', mori.clj_to_js(korks));
+  console.log('Transacting', mori.clj_to_js(path));
 
   // Add current state to history
   stateHistory = mori.conj(stateHistory, state);
 
   // Update global state object
-  state = mori.update_in(state, korks, f);
+  state = mori.update_in(state, path, fn);
 
   // Re-render
   render(state);
@@ -74,9 +120,14 @@ render(state);
 
 
 // DEBUG
-setInterval(function() {
-  //console.log('tick');
-}, 1000);
+var interval = setInterval(function() {
+  transact(state, ['user'], function() {
+    return mori.hash_map('name', 'Naomi');
+  });
+}, 8);
+setTimeout(function() {
+  clearInterval(interval);
+}, 2000);
 
 setTimeout(function() {
   transact(state, ['user'], function() {
