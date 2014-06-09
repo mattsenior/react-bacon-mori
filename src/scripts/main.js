@@ -49,12 +49,15 @@ stateHistory = state.scan(m.vector(), function(history, newState) {
 
 // Render trigger stream
 //
-// A stream of events upon which we execute the render.
+// A stream of events upon which we will execute the render.
 // If we have requestAnimationFrame available, we will be controlled by that,
 // else we are throttled to the timeout set in the raf polyfill.
 //
 // We are ‘watching’ for changes (including the initial value) of our state
 // property, irrespective of the mutateStream.
+//
+// Using `flatMapFirst` means that while we are waiting for the `raf`
+// callback, we discard any other events on the `state` stream.
 renderTriggerStream = state
   .toEventStream()
   .flatMapFirst(function() {
@@ -71,6 +74,7 @@ renderStream = state.sampledBy(renderTriggerStream);
 
 /**
  * Render the root component with the given state
+ * @param {object} state The state object to render
  */
 function render(state) {
   React.renderComponent(
@@ -82,7 +86,7 @@ function render(state) {
   );
 }
 
-// Execute the render
+// Execute the render for each new renderStream event
 renderStream.onValue(render);
 
 

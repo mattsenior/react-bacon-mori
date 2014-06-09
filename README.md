@@ -3,6 +3,12 @@ npm install
 npm start
 ```
 
+Serve from `dist` directory however you like, e.g.
+
+```sh
+python -m SimpleHTTPServer
+```
+
 Enable LiveReload extension in browser.
 
 
