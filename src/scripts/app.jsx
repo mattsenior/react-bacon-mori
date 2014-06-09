@@ -2,10 +2,11 @@
 
 var React = require('react');
 var m = require('mori');
+
 var immutableMixin = require('./immutable-mixin');
 
 module.exports = React.createClass({
-  tagName: 'Blah',
+  displayName: 'App',
   mixins: [immutableMixin],
 
   render: function() {
