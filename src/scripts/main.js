@@ -2,6 +2,7 @@
 
 // Theirs
 var m = require('mori');
+var _ = require('lodash');
 var raf = require('raf');
 var React = require('react');
 var Bacon = require('baconjs');
@@ -128,3 +129,75 @@ setTimeout(function() {
     });
   });
 }, 5000);
+
+
+
+var a = new Bacon.Bus();
+var b = new Bacon.Bus();
+var c = new Bacon.Bus();
+
+a.log('A');
+b.log('B');
+c.log('C');
+
+//var c = Bacon.when(
+//  [a, b], function(a, b) {
+//    return 'A and B: ' + a + b;
+//  },
+//
+//  [a], function(a) {
+//    return 'Just a: ' + a
+//  }
+//);
+//
+//c.log();
+//
+//Bacon.onValues(a, b, function(a, b) {
+//  console.log('onValues: A and B', a, b);
+//});
+//
+//var d = Bacon.when(
+//  [a.toProperty(), b], function(a, b) {
+//    return 'Should be triggered by B only: ' + a + b;
+//  }
+//);
+//
+//d.log();
+
+/**
+ * Custom Bacon Observable helper to wait until new events have occurred on
+ * one or more given streams.
+ * @param {...object} deps One or more Bacon.Observable instances
+ * @returns {object} Bacon EventStream from flatMap
+ */
+Bacon.Observable.prototype.waitFor = function(deps) {
+  deps = Array.prototype.slice.call(arguments);
+
+  if (_.contains(deps, this)) {
+    throw new Error('Observable can’t wait for itself');
+  }
+
+  return this.flatMap(function(x) {
+    return Bacon.zipAsArray.apply(this, deps).map(x).take(1);
+  });
+};
+
+
+a
+  .waitFor(b, c)
+  .log('ping');
+
+var i = 0;
+a.push(i++);
+b.push(i++);
+setTimeout(function() {
+  c.push(i++);
+}, 2000);
+
+//var i = setInterval(function() {
+//  a.push({hello: 'hello'});
+//}, 100);
+//setTimeout(function() {
+//  b.push('b');
+//  clearTimeout(i);
+//}, 5000);

@@ -5,8 +5,7 @@ var m = require('mori');
 
 var immutableMixin = require('./immutable-mixin');
 
-module.exports = React.createClass({
-  displayName: 'App',
+var App = React.createClass({
   mixins: [immutableMixin],
 
   render: function() {
@@ -15,3 +14,5 @@ module.exports = React.createClass({
     )
   }
 });
+
+module.exports = App;
